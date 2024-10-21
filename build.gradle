@@ -3,7 +3,7 @@ buildscript {
 		mavenCentral()
 	}
 	dependencies {
-		classpath libs.kotlin.plugin.core
+		classpath libs.kotlin.plugin
 		classpath libs.spotless.gradlePlugin
 	}
 }
@@ -22,7 +22,6 @@ application {
 
 dependencies {
 	implementation libs.clikt
-	implementation libs.kotlinx.io
 }
 
 tasks.withType(JavaCompile).configureEach { task ->

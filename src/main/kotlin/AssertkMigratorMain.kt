@@ -3,6 +3,9 @@
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.help
+import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import java.io.File
 import kotlin.io.path.ExperimentalPathApi
@@ -14,6 +17,14 @@ fun main(vararg args: String) {
 @OptIn(ExperimentalPathApi::class)
 private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 	private val projectDir by argument().file()
+
+	private val truth by option()
+		.default("truth")
+		.help("Version catalog path to the Truth dependency")
+
+	private val assertk by option()
+		.default("assertk")
+		.help("Version catalog path to the AssertK dependency")
 
 	override fun run() {
 		// TODO git ls-files
@@ -28,22 +39,24 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 	}
 
 	private fun migrateBuild(file: File) {
-		if (file.name != "build.gradle") {
+		if (file.name !in listOf("build.gradle", "build.gradle.kts")) {
 			return
 		}
+		println("BUILD $file")
 
 		val original = file.readText()
 
+		// TODO What about modules with only kotlin.test dependency and no Truth? Dup + replace.
+
 		val newLines = original.lines()
 			.map {
-				if ("libs.truth" in it) {
-					it.replace("libs.truth", "libs.assertk")
+				if ("libs.$truth" in it) {
+					it.replace("libs.$truth", "libs.$assertk")
 				} else {
 					it
 				}
 			}
 
-		println("BUILD $file")
 		file.writeText(newLines.joinToString("\n"))
 	}
 
@@ -52,6 +65,7 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 		if ("kotlin.test" !in original || "com.google.common.truth" !in original) {
 			return
 		}
+		println("SOURCE $file")
 
 		// Get rid of static assertThat import from Truth which will conflict with AssertK
 		val assertThatImport = "import com.google.common.truth.Truth.assertThat\n"
@@ -77,6 +91,5 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 		//  assertThat(actual).apply { .. } --> assertThat(actual).all { .. }
 
 		file.writeText(withImports)
-		println("SOURCE $file")
 	}
 }
