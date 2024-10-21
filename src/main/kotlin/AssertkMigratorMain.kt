@@ -1,6 +1,7 @@
 @file:JvmName("AssertkMigratorMain")
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.default
@@ -16,15 +17,18 @@ fun main(vararg args: String) {
 
 @OptIn(ExperimentalPathApi::class)
 private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
+	override fun help(context: Context) =
+		"Migrate your repo from kotlin.test and Truth assertions to AssertK automatically"
+
 	private val projectDir by argument().file()
 
 	private val truth by option()
 		.default("truth")
-		.help("Version catalog path to the Truth dependency")
+		.help("Version catalog path to the Truth dependency (default: truth)")
 
 	private val assertk by option()
 		.default("assertk")
-		.help("Version catalog path to the AssertK dependency")
+		.help("Version catalog path to the AssertK dependency (default: assertk)")
 
 	override fun run() {
 		// TODO git ls-files
