@@ -5,6 +5,7 @@ import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.help
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
@@ -29,6 +30,8 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 	private val assertk by option()
 		.default("assertk")
 		.help("Version catalog path to the AssertK dependency (default: assertk)")
+
+	private val debug by option(hidden = true).flag()
 
 	override fun run() {
 		// TODO git ls-files
@@ -66,7 +69,10 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 
 	private fun migrateTest(file: File) {
 		val original = file.readText()
-		if ("kotlin.test" !in original || "com.google.common.truth" !in original) {
+		if ("org.junit.Assert" !in original &&
+			"kotlin.test" !in original &&
+			"com.google.common.truth" !in original
+		) {
 			return
 		}
 		println("SOURCE $file")
@@ -83,9 +89,13 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 
 		// Add star imports for AssertK, Spotless will clean them up to individual imports later.
 		val firstImportIndex = withoutAssertThatImport.indexOf("\nimport ")
-		val withImports = withoutAssertThatImport.substring(0, firstImportIndex) +
-			"\nimport assertk.*\nimport assertk.assertions.*" +
-			withoutAssertThatImport.substring(firstImportIndex)
+		val withImports = buildString {
+			append(withoutAssertThatImport.substring(0, firstImportIndex))
+			assertkImports.joinTo(this, separator = "") { "\nimport $it" }
+			append(withoutAssertThatImport.substring(firstImportIndex))
+		}
+
+		val migrated = withImports.replace(".isOfType<", ".isInstanceOf<")
 
 		// TODO fix-up callsites
 		//  Truth.assertThat --> assertThat(actual).isEqualTo(expected)
@@ -94,6 +104,24 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 		//  etc..
 		//  assertThat(actual).apply { .. } --> assertThat(actual).all { .. }
 
-		file.writeText(withImports)
+		file.writeText(migrated)
 	}
+
+	private fun debugLog(log: () -> Any) {
+		if (debug) {
+			println("[DEBUG] ${log()}")
+		}
+	}
+
+	private val assertkImports = listOf(
+		"assertk.assertThat",
+		"assertk.assertions.containsExactly",
+		"assertk.assertions.hasSize",
+		"assertk.assertions.isEqualTo",
+		"assertk.assertions.isFalse",
+		"assertk.assertions.isInstanceOf",
+		"assertk.assertions.isNotNull",
+		"assertk.assertions.isNull",
+		"assertk.assertions.isTrue",
+	)
 }
