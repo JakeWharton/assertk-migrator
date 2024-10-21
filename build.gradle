@@ -1,0 +1,49 @@
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath libs.kotlin.plugin.core
+		classpath libs.spotless.gradlePlugin
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'application'
+apply plugin: 'com.diffplug.spotless'
+
+application {
+	mainClass = 'AssertkMigratorMain'
+}
+
+dependencies {
+	implementation libs.clikt
+	implementation libs.kotlinx.io
+}
+
+tasks.withType(JavaCompile).configureEach { task ->
+	task.sourceCompatibility = '1.8'
+	task.targetCompatibility = '1.8'
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile).configureEach { task ->
+	task.kotlinOptions {
+		jvmTarget = '1.8'
+	}
+}
+
+spotless {
+	kotlin {
+		target("src/**/*.kt")
+		ktlint(libs.ktlint.core.get().version)
+			.editorConfigOverride([
+				'ktlint_standard_filename': 'disabled',
+				// Making something an expression body should be a choice around readability.
+				'ktlint_standard_function-expression-body': 'disabled',
+			])
+	}
+}
