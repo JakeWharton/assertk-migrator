@@ -70,8 +70,8 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 	private fun migrateTest(file: File) {
 		val original = file.readText()
 		if ("org.junit.Assert" !in original &&
-			"kotlin.test" !in original &&
-			"com.google.common.truth" !in original
+			"kotlin.test." !in original &&
+			"com.google.common.truth." !in original
 		) {
 			return
 		}
@@ -95,7 +95,15 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 			append(withoutAssertThatImport.substring(firstImportIndex))
 		}
 
-		val migrated = withImports.replace(".isOfType<", ".isInstanceOf<")
+		val migrated = withImports
+			.replace(".isAssignableTo(", ".isInstanceOf(")
+			.replace(".hasMessageThat()", ".message()")
+			// AssertK defaults to ordered comparison.
+			.replace(".inOrder()", "")
+			// Note: Custom Cash App extension on Truth Subject.
+			.replace(".isOfType<", ".isInstanceOf<")
+			// .isInstanceOf(Home::class.java) --> .isInstanceOf<Home>()
+			.replace(Regex("""\.isInstanceOf\(([A-Za-z0-9_.]+)::class\.java\)"""), ".isInstanceOf<$1>()")
 
 		// TODO fix-up callsites
 		//  Truth.assertThat --> assertThat(actual).isEqualTo(expected)
@@ -117,11 +125,16 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 		"assertk.assertThat",
 		"assertk.assertions.containsExactly",
 		"assertk.assertions.hasSize",
+		"assertk.assertions.isEmpty",
 		"assertk.assertions.isEqualTo",
 		"assertk.assertions.isFalse",
 		"assertk.assertions.isInstanceOf",
+		"assertk.assertions.isNotEmpty",
 		"assertk.assertions.isNotNull",
 		"assertk.assertions.isNull",
 		"assertk.assertions.isTrue",
+		"assertk.assertions.isSameInstanceAs",
+		"assertk.assertions.isNotSameInstanceAs",
+		"assertk.assertions.message",
 	)
 }
