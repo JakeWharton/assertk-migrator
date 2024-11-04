@@ -1,6 +1,11 @@
 # AssertK Migrator
 
-Migrate your repo from kotlin.test and Truth assertions to AssertK automatically.
+Migrate your repo from Truth assertions to AssertK (mostly) automatically.
+
+I do not plan to maintain this tool.
+It's an accelerator to an internal migration and then will be archived on GitHub.
+Trivial contributions may be merged, but larger changes should just be done in a fork.
+
 
 ## Usage
 
@@ -14,7 +19,7 @@ For example, `assertk-migrator --truth "test.truth" path/to/repo` will look for 
 The script will print out each file that is being migrated _before_ it is migrated and overwritten.
 
 ```
-$ assertk-migrator path/to/repo
+$ assertk-migrator path/to/folder
 BUILD module-a/build.gradle
 SOURCE module-a/src/test/kotlin/FooTest.kt
 SOURCE module-a/src/test/kotlin/BarTest.kt
@@ -22,6 +27,20 @@ BUILD module-b/build.gradle
 SOURCE module-b/src/test/kotlin/PingTest.kt
 SOURCE module-b/src/test/kotlin/PongTest.kt
 ```
+
+### Accuracy
+
+This tool assumes some things:
+
+- ~90% of files will just compile and work
+  - You will have to manually fix up ~10% of files for various reasons
+  - Getting to 100% is [not worth our time](https://xkcd.com/1319/).
+- You are using something like [ktlint](https://pinterest.github.io/ktlint) to sort and remove the unused dependencies
+- You are using something like [gradle-dependencies-sorter](https://github.com/square/gradle-dependencies-sorter) to sort the dependency declarations.
+
+### What about `org.junit.Assert` or `kotlin.test`?
+
+These can be migrated with IntelliJ or `sed` or the like with the same level of fidelity as this tool could do.
 
 
 ## License
