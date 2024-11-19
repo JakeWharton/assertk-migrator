@@ -124,6 +124,7 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 	private val assertkImports = listOf(
 		"assertk.assertThat",
 		"assertk.assertions.containsExactly",
+		"assertk.assertions.doesNotContain",
 		"assertk.assertions.hasSize",
 		"assertk.assertions.isEmpty",
 		"assertk.assertions.isEqualTo",
