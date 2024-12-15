@@ -104,9 +104,9 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 			.replace(".isOfType<", ".isInstanceOf<")
 			// .isInstanceOf(Home::class.java) --> .isInstanceOf<Home>()
 			.replace(Regex("""\.isInstanceOf\(([A-Za-z0-9_.]+)::class\.java\)"""), ".isInstanceOf<$1>()")
+			.replace("Truth.assertThat", "assertThat")
 
-		// TODO fix-up callsites
-		//  Truth.assertThat --> assertThat(actual).isEqualTo(expected)
+		// TODO fix-up remaining callsites
 		//  assertEquals --> assertThat(actual).isEqualTo(expected)
 		//  assertTrue --> assertThat(actual).isTrue()
 		//  etc..
