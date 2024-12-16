@@ -105,6 +105,8 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 			// .isInstanceOf(Home::class.java) --> .isInstanceOf<Home>()
 			.replace(Regex("""\.isInstanceOf\(([A-Za-z0-9_.]+)::class\.java\)"""), ".isInstanceOf<$1>()")
 			.replace("Truth.assertThat", "assertThat")
+			.replace(".containsExactlyInOrder(", ".containsExactly(")
+			.replace(".containsEntry(", ".contains(")
 
 		// TODO fix-up remaining callsites
 		//  assertEquals --> assertThat(actual).isEqualTo(expected)
@@ -123,6 +125,7 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 
 	private val assertkImports = listOf(
 		"assertk.assertThat",
+		"assertk.assertions.contains",
 		"assertk.assertions.containsExactly",
 		"assertk.assertions.doesNotContain",
 		"assertk.assertions.hasSize",
