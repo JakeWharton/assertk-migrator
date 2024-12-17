@@ -9,5 +9,8 @@ build
 # Android
 local.properties
 
+# Steve Jobs
+.DS_Store
+
 # Kotlin
 .kotlin
