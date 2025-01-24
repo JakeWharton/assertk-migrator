@@ -40,17 +40,17 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 				.filter { ".git/" !in it.path }
 				.filter { "/build/" !in it.path }
 				.filter(File::isFile)
-				.forEach {
-					migrateBuild(it)
-					migrateTest(it)
+				.forEach { file ->
+					if (file.name.endsWith(".kt")) {
+						migrateTest(file)
+					} else if (file.name !in listOf("build.gradle", "build.gradle.kts")) {
+						migrateBuild(file)
+					}
 				}
 		}
 	}
 
 	private fun migrateBuild(file: File) {
-		if (file.name !in listOf("build.gradle", "build.gradle.kts")) {
-			return
-		}
 		println("BUILD $file")
 
 		val original = file.readText()
