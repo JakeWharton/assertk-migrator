@@ -4,6 +4,7 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.help
@@ -21,7 +22,7 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 	override fun help(context: Context) =
 		"Migrate your repo from kotlin.test and Truth assertions to AssertK automatically"
 
-	private val projectDir by argument().file()
+	private val projectDirs by argument().file().multiple(required = true)
 
 	private val truth by option()
 		.default("truth")
@@ -34,15 +35,16 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 	private val debug by option(hidden = true).flag()
 
 	override fun run() {
-		// TODO git ls-files
-		projectDir.walk()
-			.filter { ".git/" !in it.path }
-			.filter { "/build/" !in it.path }
-			.filter(File::isFile)
-			.forEach {
-				migrateBuild(it)
-				migrateTest(it)
-			}
+		for (projectDir in projectDirs) {
+			projectDir.walk()
+				.filter { ".git/" !in it.path }
+				.filter { "/build/" !in it.path }
+				.filter(File::isFile)
+				.forEach {
+					migrateBuild(it)
+					migrateTest(it)
+				}
+		}
 	}
 
 	private fun migrateBuild(file: File) {
