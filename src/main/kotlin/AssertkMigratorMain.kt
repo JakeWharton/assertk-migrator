@@ -9,9 +9,15 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.help
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.types.file
-import java.io.File
+import com.github.ajalt.clikt.parameters.types.path
+import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.extension
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.name
+import kotlin.io.path.readText
+import kotlin.io.path.walk
+import kotlin.io.path.writeText
 
 fun main(vararg args: String) {
 	AssertkMigratorCommand().main(args)
@@ -22,7 +28,7 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 	override fun help(context: Context) =
 		"Migrate your repo from kotlin.test and Truth assertions to AssertK automatically"
 
-	private val projectDirs by argument().file().multiple(required = true)
+	private val projectDirs by argument().path().multiple(required = true)
 
 	private val truth by option()
 		.default("truth")
@@ -37,11 +43,11 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 	override fun run() {
 		for (projectDir in projectDirs) {
 			projectDir.walk()
-				.filter { ".git/" !in it.path }
-				.filter { "/build/" !in it.path }
-				.filter(File::isFile)
+				.filter { ".git/" !in it.toString() }
+				.filter { "/build/" !in it.toString() }
+				.filter(Path::isRegularFile)
 				.forEach { file ->
-					if (file.name.endsWith(".kt")) {
+					if (file.extension == "kt") {
 						migrateTest(file)
 					} else if (file.name !in listOf("build.gradle", "build.gradle.kts")) {
 						migrateBuild(file)
@@ -50,7 +56,7 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 		}
 	}
 
-	private fun migrateBuild(file: File) {
+	private fun migrateBuild(file: Path) {
 		println("BUILD $file")
 
 		val original = file.readText()
@@ -69,7 +75,7 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 		file.writeText(newLines.joinToString("\n"))
 	}
 
-	private fun migrateTest(file: File) {
+	private fun migrateTest(file: Path) {
 		val original = file.readText()
 		if ("org.junit.Assert" !in original &&
 			"kotlin.test." !in original &&
@@ -105,7 +111,7 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 			// Note: Custom Cash App extension on Truth Subject.
 			.replace(".isOfType<", ".isInstanceOf<")
 			// .isInstanceOf(Home::class.java) --> .isInstanceOf<Home>()
-			.replace(Regex("""\.isInstanceOf\(([A-Za-z0-9_.]+)::class\.java\)"""), ".isInstanceOf<$1>()")
+			.replace(isInstanceOfRegex, ".isInstanceOf<$1>()")
 			.replace("Truth.assertThat", "assertThat")
 			.replace(".containsExactlyInOrder(", ".containsExactly(")
 			.replace(".containsEntry(", ".contains(")
@@ -144,3 +150,5 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 		"assertk.assertions.message",
 	)
 }
+
+private val isInstanceOfRegex = """\.isInstanceOf\(([A-Za-z0-9_.]+)::class\.java\)""".toRegex()

@@ -16,3 +16,6 @@ indent_style = space
 
 [*.{kt,kts}]
 ij_kotlin_imports_layout=*
+ij_kotlin_name_count_to_use_star_import = 999
+ij_kotlin_name_count_to_use_star_import_for_members = 999
+ij_kotlin_packages_to_use_import_on_demand = unset
