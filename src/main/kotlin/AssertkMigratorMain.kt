@@ -142,6 +142,7 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 		"assertk.assertions.isFalse",
 		"assertk.assertions.isInstanceOf",
 		"assertk.assertions.isNotEmpty",
+		"assertk.assertions.isNotEqualTo",
 		"assertk.assertions.isNotNull",
 		"assertk.assertions.isNull",
 		"assertk.assertions.isTrue",
