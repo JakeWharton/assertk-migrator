@@ -49,7 +49,7 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 				.forEach { file ->
 					if (file.extension == "kt") {
 						migrateTest(file)
-					} else if (file.name !in listOf("build.gradle", "build.gradle.kts")) {
+					} else if (file.name in listOf("build.gradle", "build.gradle.kts")) {
 						migrateBuild(file)
 					}
 				}
