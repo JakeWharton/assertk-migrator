@@ -111,7 +111,8 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 			// Note: Custom Cash App extension on Truth Subject.
 			.replace(".isOfType<", ".isInstanceOf<")
 			// .isInstanceOf(Home::class.java) --> .isInstanceOf<Home>()
-			.replace(isInstanceOfRegex, ".isInstanceOf<$1>()")
+			// .isNotInstanceOf(Home::class.java) --> .isNotInstanceOf<Home>()
+			.replace(isInstanceOfRegex, ".is$1InstanceOf<$2>()")
 			.replace("Truth.assertThat", "assertThat")
 			.replace(".containsExactlyInOrder(", ".containsExactly(")
 			.replace(".containsEntry(", ".contains(")
@@ -143,6 +144,7 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 		"assertk.assertions.isInstanceOf",
 		"assertk.assertions.isNotEmpty",
 		"assertk.assertions.isNotEqualTo",
+		"assertk.assertions.isNotInstanceOf",
 		"assertk.assertions.isNotNull",
 		"assertk.assertions.isNull",
 		"assertk.assertions.isTrue",
@@ -152,4 +154,4 @@ private class AssertkMigratorCommand : CliktCommand(name = "assertk-migrator") {
 	)
 }
 
-private val isInstanceOfRegex = """\.isInstanceOf\(([A-Za-z0-9_.]+)::class\.java\)""".toRegex()
+private val isInstanceOfRegex = """\.is(Not)?InstanceOf\(([A-Za-z0-9_.]+)::class\.java\)""".toRegex()
