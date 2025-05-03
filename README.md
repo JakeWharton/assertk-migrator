@@ -43,6 +43,49 @@ This tool assumes some things:
 These can be migrated with IntelliJ or `sed` or the like with the same level of fidelity as this tool could do.
 
 
+## Automatic migration
+
+Here's a quick Bash script to automatically migrate your modules one-by-one.
+Once this script completes, the only modules left require manual intervention to compile and/or pass tests.
+
+```bash
+#!/usr/bin/env bash
+
+dirs=$(git grep -r 'libs.truth' | cut -d':' -f1 | xargs -n 1 dirname | shuf)
+
+for dir in $dirs; do
+  git reset --hard HEAD
+  git checkout master
+
+  branch="$(whoami).assertk-$dir"
+  git checkout -b "$branch" || continue
+
+  /path/to/assertk-migrator/build/install/assertk-migrator/bin/assertk-migrator $dir
+
+  ./gradlew -q -p "$dir" sortDep spotApply || continue
+  ./gradlew -q -p "$dir" check || continue
+
+  git commit -am "Migrate $dir to AssertK"
+  git push origin "$branch"
+  gh pr create --fill
+  gh pr merge --merge --auto
+done
+```
+
+It assumes:
+- Truth can be identified by `libs.truth` dependency.
+- You have `gh` installed and authenticated.
+- `master` is your trunk branch.
+- You have this repo cloned and you've run `./gradlew installDist` in it.
+- Merge commits and auto-merge is enabled on your repo with appropriate branch protection.
+- You have Spotless and https://github.com/square/gradle-dependencies-sorter applied on every module.
+
+You should change:
+- `/path/to/assertk-migrator` to be the path to your checkout of this repo.
+
+Enjoy! …and use at your own risk!
+
+
 ## License
 
     Copyright 2024 Jake Wharton
