@@ -6,6 +6,9 @@ I do not plan to maintain this tool.
 It's an accelerator to an internal migration and then will be archived on GitHub.
 Trivial contributions may be merged, but larger changes should just be done in a fork.
 
+Our migration is complete, so the project is being archived.
+Feel free to fork or make changes locally to support your own migrations.
+
 
 ## Usage
 
